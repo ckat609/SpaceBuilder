@@ -49,12 +49,13 @@ def createCeiling(spaceDocument):
     
     vertices = []
     for wall in spaceDocument['room']['walls']:
+        points = wall['points']
+        points.reverse()
         for point in wall['points']:
             vertex = mathutils.Vector((point['x']/M, point['y']/M, point['z']/M))
 
             if(point['z'] != 0 and vertex not in vertices):
                 vertices.append(mathutils.Vector(vertex))
-                print(vertex)
 
 
     objMesh = obj.data
@@ -173,6 +174,6 @@ aSpaceDocument = getSpaceDocument(aFile)
 removeAllObjects()
 removeAllCollections()
 
-# createWalls(aSpaceDocument)
-# createFloor(aSpaceDocument)
+createWalls(aSpaceDocument)
+createFloor(aSpaceDocument)
 createCeiling(aSpaceDocument)
