@@ -42,22 +42,7 @@ def removeAllCollections():
         
 
 
-def createCeiling(spaceDocument):
-    name = ceilingPrefix
-    emptyMesh = bpy.data.meshes.new(name)
-    obj = bpy.data.objects.new(name, emptyMesh)
-    
-    vertices = []
-    for wall in spaceDocument['room']['walls']:
-        points = wall['points']
-        points.reverse()
-        for point in wall['points']:
-            vertex = mathutils.Vector((point['x']/M, point['y']/M, point['z']/M))
-
-            if(point['z'] != 0 and vertex not in vertices):
-                vertices.append(mathutils.Vector(vertex))
-
-
+def addMeshToObject(vertices, obj):
     objMesh = obj.data
     bm = bmesh.new()
 
@@ -75,20 +60,47 @@ def createCeiling(spaceDocument):
 
     bm.to_mesh(objMesh)
     bm.free()
+    
+    return obj
 
 
+
+def linkObjectToNewCollection(obj, name):
     newWallCollection = bpy.data.collections.new(name)
     bpy.context.scene.collection.children.link(newWallCollection)
     newWallCollection.objects.link(obj)
+
+
+
+def createCeiling(spaceDocument):
+    name = ceilingPrefix
+    emptyMesh = bpy.data.meshes.new(name)
+    tempObj = bpy.data.objects.new(name, emptyMesh)
     
-    return obj
+    vertices = []
+    for wall in spaceDocument['room']['walls']:
+        points = wall['points']
+        points.reverse()
+
+        for point in wall['points']:
+            vertex = mathutils.Vector((point['x']/M, point['y']/M, point['z']/M))
+
+            if(point['z'] != 0 and vertex not in vertices):
+                vertices.append(mathutils.Vector(vertex))
+
+
+    newObj = addMeshToObject(vertices, tempObj)
+    linkObjectToNewCollection(newObj, name)
+
+    
+    return newObj
         
         
     
 def createFloor(spaceDocument):
     name = floorPrefix
     emptyMesh = bpy.data.meshes.new(name)
-    obj = bpy.data.objects.new(name, emptyMesh)
+    tempObj = bpy.data.objects.new(name, emptyMesh)
     
     vertices = []
     for wall in spaceDocument['room']['walls']:
@@ -99,30 +111,10 @@ def createFloor(spaceDocument):
                 vertices.append(mathutils.Vector(vertex))
 
 
-    objMesh = obj.data
-    bm = bmesh.new()
-
-    for v in vertices:
-        bm.verts.new(v)
-    bm.verts.ensure_lookup_table()
-
-    for idx, v in enumerate(bm.verts):
-        if(idx == len(bm.verts)-1):
-            bm.edges.new([bm.verts[len(bm.verts)-1], bm.verts[0]])
-        else:
-            bm.edges.new([bm.verts[idx], bm.verts[idx+1]])
-
-    bm.faces.new(bm.verts)
-
-    bm.to_mesh(objMesh)
-    bm.free()
-
-
-    newWallCollection = bpy.data.collections.new(name)
-    bpy.context.scene.collection.children.link(newWallCollection)
-    newWallCollection.objects.link(obj)
+    newObj = addMeshToObject(vertices, tempObj)
+    linkObjectToNewCollection(newObj, name)
     
-    return obj
+    return newObj
         
         
     
@@ -131,35 +123,15 @@ def createWalls(spaceDocument):
     for wall in spaceDocument['room']['walls']:
         name = f"{wallPrefix}{wall['id']}"
         emptyMesh = bpy.data.meshes.new(name)
-        obj = bpy.data.objects.new(name, emptyMesh)
+        tempObj = bpy.data.objects.new(name, emptyMesh)
 
         vertices = []
         for point in wall['points']:
             vertices.append(mathutils.Vector((point['x']/M, point['y']/M, point['z']/M)))
 
             
-        objMesh = obj.data
-        bm = bmesh.new()
-
-        for v in vertices:
-            bm.verts.new(v)
-        bm.verts.ensure_lookup_table()
-
-        for idx, v in enumerate(bm.verts):
-            if(idx == len(bm.verts)-1):
-                bm.edges.new([bm.verts[len(bm.verts)-1], bm.verts[0]])
-            else:
-                bm.edges.new([bm.verts[idx], bm.verts[idx+1]])
-
-        bm.faces.new(bm.verts)
-
-        bm.to_mesh(objMesh)
-        bm.free()
-
-
-        newWallCollection = bpy.data.collections.new(name)
-        bpy.context.scene.collection.children.link(newWallCollection)
-        newWallCollection.objects.link(obj)
+        newObj = addMeshToObject(vertices, tempObj)
+        linkObjectToNewCollection(newObj, name)
     
  
 
