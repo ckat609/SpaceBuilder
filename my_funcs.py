@@ -62,8 +62,6 @@ def createWalls(spaceDocument):
 
 
 
-
-
 def drawWalls():
     return
 
